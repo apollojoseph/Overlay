@@ -1,1 +1,79 @@
 
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Simple Football Scoreboard</title>
+  <style>
+    body {
+      background: transparent;
+      margin: 0;
+      color: white;
+      font-family: 'Arial Black', Arial, sans-serif;
+      text-align: center;
+      user-select: none;
+    }
+    #scoreboard {
+      background-color: rgba(0,0,0,0.5);
+      border-radius: 15px;
+      width: 500px;
+      margin: 20px auto;
+      padding: 20px;
+      display: flex;
+      justify-content: space-around;
+      font-size: 48px;
+    }
+    .team {
+      flex: 1;
+    }
+    .team-name {
+      font-weight: bold;
+      font-size: 36px;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+    .score {
+      font-weight: 900;
+      font-size: 96px;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="scoreboard">
+    <div class="team">
+      <div id="homeName" class="team-name">HOME</div>
+      <div id="homeScore" class="score">0</div>
+    </div>
+    <div class="team">
+      <div id="awayName" class="team-name">AWAY</div>
+      <div id="awayScore" class="score">0</div>
+    </div>
+  </div>
+
+  <script>
+    // Get URL query parameters
+    function getQueryParams() {
+      const params = {};
+      location.search.substring(1).split("&").forEach(pair => {
+        if (!pair) return;
+        const [key, value] = pair.split("=");
+        params[key] = decodeURIComponent(value || "");
+      });
+      return params;
+    }
+
+    // Update scoreboard from query params
+    function updateScoreboard() {
+      const params = getQueryParams();
+
+      document.getElementById('homeName').textContent = params.homeName || 'HOME';
+      document.getElementById('awayName').textContent = params.awayName || 'AWAY';
+      document.getElementById('homeScore').textContent = params.homeScore || '0';
+      document.getElementById('awayScore').textContent = params.awayScore || '0';
+    }
+
+    updateScoreboard();
+  </script>
+
+</body>
+</html>
