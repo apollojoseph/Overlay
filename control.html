@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Scoreboard Control Panel</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 20px auto;
+      padding: 10px;
+      background: #222;
+      color: white;
+      border-radius: 10px;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    input, select {
+      width: 100%;
+      padding: 6px 10px;
+      margin-top: 5px;
+      font-size: 16px;
+      border-radius: 5px;
+      border: none;
+    }
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 12px;
+      font-size: 18px;
+      background: #4CAF50;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      color: white;
+    }
+    button:hover {
+      background: #45a049;
+    }
+    #result {
+      margin-top: 20px;
+      background: #333;
+      padding: 10px;
+      word-break: break-all;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Football Scoreboard Control</h1>
+
+  <label for="homeName">Home Team Name</label>
+  <input type="text" id="homeName" value="HOME" />
+
+  <label for="awayName">Away Team Name</label>
+  <input type="text" id="awayName" value="AWAY" />
+
+  <label for="homeScore">Home Score</label>
+  <input type="number" id="homeScore" min="0" value="0" />
+
+  <label for="awayScore">Away Score</label>
+  <input type="number" id="awayScore" min="0" value="0" />
+
+  <label for="quarter">Quarter</label>
+  <select id="quarter">
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="4">4</option>
+    <option value="OT">OT</option>
+  </select>
+
+  <label for="down">Down</label>
+  <select id="down">
+    <option value="1">1st</option>
+    <option value="2">2nd</option>
+    <option value="3">3rd</option>
+    <option value="4">4th</option>
+  </select>
+
+  <label for="distance">Distance (yards)</label>
+  <input type="number" id="distance" min="1" max="99" value="10" />
+
+  <label for="ballOn">Ball On Yard Line (1-50)</label>
+  <input type="number" id="ballOn" min="1" max="50" value="50" />
+
+  <label for="possession">Possession</label>
+  <select id="possession">
+    <option value="">None</option>
+    <option value="home">Home</option>
+    <option value="away">Away</option>
+  </select>
+
+  <label for="homeTimeoutsUsed">Home Timeouts Used</label>
+  <select id="homeTimeoutsUsed">
+    <option value="0">0</option>
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+  </select>
+
+  <label for="awayTimeoutsUsed">Away Timeouts Used</label>
+  <select id="awayTimeoutsUsed">
+    <option value="0">0</option>
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+  </select>
+
+  <button id="generateBtn">Generate URL</button>
+
+  <div id="result"></div>
+
+  <script>
+    document.getElementById('generateBtn').addEventListener('click', () => {
+      const params = {
+        homeName: encodeURIComponent(document.getElementById('homeName').value.trim() || 'HOME'),
+        awayName: encodeURIComponent(document.getElementById('awayName').value.trim() || 'AWAY'),
+        homeScore: encodeURIComponent(document.getElementById('homeScore').value),
+        awayScore: encodeURIComponent(document.getElementById('awayScore').value),
+        quarter: encodeURIComponent(document.getElementById('quarter').value),
+        down: encodeURIComponent(document.getElementById('down').value),
+        distance: encodeURIComponent(document.getElementById('distance').value),
+        ballOn: encodeURIComponent(document.getElementById('ballOn').value),
+        possession: encodeURIComponent(document.getElementById('possession').value),
+        homeTimeoutsUsed: encodeURIComponent(document.getElementById('homeTimeoutsUsed').value),
+        awayTimeoutsUsed: encodeURIComponent(document.getElementById('awayTimeoutsUsed').value),
+      };
+
+      const baseURL = 'https://apollojoseph.github.io/Overlay/overlay.html';
+
+      let query = Object.entries(params)
+        .map(([k,v]) => `${k}=${v}`)
+        .join('&');
+
+      const fullURL = `${baseURL}?${query}`;
+
+      const resultDiv = document.getElementById('result');
+      resultDiv.textContent = fullURL;
+      resultDiv.style.userSelect = 'all';  // so it can be easily selected
+
+    });
+  </script>
+</body>
+</html>
