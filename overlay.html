@@ -1,57 +1,187 @@
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Simple Football Scoreboard</title>
+  <meta charset="UTF-8" />
+  <title>NFL Style Football Scoreboard</title>
   <style>
+    /* Reset and basic styles */
     body {
-      background: transparent;
       margin: 0;
-      color: white;
+      background: transparent;
       font-family: 'Arial Black', Arial, sans-serif;
-      text-align: center;
+      color: white;
       user-select: none;
+      -webkit-font-smoothing: antialiased;
+      text-align: center;
     }
+
     #scoreboard {
-      background-color: rgba(0,0,0,0.5);
-      border-radius: 15px;
-      width: 500px;
+      width: 800px;
       margin: 20px auto;
-      padding: 20px;
+      background: rgba(0, 0, 0, 0.75);
+      border-radius: 15px;
+      padding: 20px 30px;
       display: flex;
-      justify-content: space-around;
-      font-size: 48px;
+      flex-direction: column;
+      color: white;
+      box-sizing: border-box;
+    }
+
+    /* Top row: Teams and scores */
+    #teams {
+      display: flex;
+      justify-content: space-between;
+      font-size: 50px;
+      font-weight: 900;
+      margin-bottom: 10px;
     }
     .team {
       flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
     .team-name {
-      font-weight: bold;
-      font-size: 36px;
-      margin-bottom: 10px;
+      font-size: 32px;
       text-transform: uppercase;
+      margin-bottom: 8px;
+      letter-spacing: 2px;
     }
     .score {
-      font-weight: 900;
       font-size: 96px;
+    }
+
+    /* Middle row: Quarter, possession, timeouts */
+    #info-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 15px;
+      align-items: center;
+    }
+
+    #quarter {
+      flex: 1;
+      text-align: center;
+      font-size: 28px;
+      letter-spacing: 2px;
+    }
+
+    #timeouts {
+      flex: 1;
+      display: flex;
+      justify-content: space-around;
+    }
+    .timeouts-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .timeouts-label {
+      font-size: 20px;
+      margin-bottom: 5px;
+      text-transform: uppercase;
+    }
+    .timeout-dot {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background-color: green;
+      margin: 3px 0;
+      opacity: 1;
+      transition: opacity 0.3s ease;
+    }
+    .timeout-dot.used {
+      background-color: gray;
+      opacity: 0.4;
+    }
+
+    /* Bottom row: Down, Distance, Ball on */
+    #bottom-row {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      font-size: 32px;
+      font-weight: 900;
+      letter-spacing: 2px;
+    }
+
+    /* Possession Arrow */
+    #possession {
+      position: relative;
+      width: 40px;
+      height: 40px;
+      margin: 0 10px;
+      display: inline-block;
+    }
+    .arrow {
+      width: 0; 
+      height: 0; 
+      border-top: 20px solid transparent;
+      border-bottom: 20px solid transparent; 
+      border-left: 30px solid white;
+      position: absolute;
+      top: 0;
+    }
+    .possession-home {
+      left: -50px;
+      transform: rotate(0deg);
+    }
+    .possession-away {
+      right: -50px;
+      transform: rotate(180deg);
     }
   </style>
 </head>
 <body>
-
   <div id="scoreboard">
-    <div class="team">
-      <div id="homeName" class="team-name">HOME</div>
-      <div id="homeScore" class="score">0</div>
+    <!-- Teams and scores -->
+    <div id="teams">
+      <div class="team" id="homeTeam">
+        <div class="team-name" id="homeName">HOME</div>
+        <div class="score" id="homeScore">0</div>
+      </div>
+
+      <div class="team" id="awayTeam">
+        <div class="team-name" id="awayName">AWAY</div>
+        <div class="score" id="awayScore">0</div>
+      </div>
     </div>
-    <div class="team">
-      <div id="awayName" class="team-name">AWAY</div>
-      <div id="awayScore" class="score">0</div>
+
+    <!-- Info Row: quarter, timeouts, possession -->
+    <div id="info-row">
+      <div id="timeouts">
+        <div class="timeouts-group" id="homeTimeoutsGroup">
+          <div class="timeouts-label">HOME TIMEOUTS</div>
+          <div class="timeout-dot" id="homeTimeout1"></div>
+          <div class="timeout-dot" id="homeTimeout2"></div>
+          <div class="timeout-dot" id="homeTimeout3"></div>
+        </div>
+
+        <div id="quarter">Q1</div>
+
+        <div class="timeouts-group" id="awayTimeoutsGroup">
+          <div class="timeouts-label">AWAY TIMEOUTS</div>
+          <div class="timeout-dot" id="awayTimeout1"></div>
+          <div class="timeout-dot" id="awayTimeout2"></div>
+          <div class="timeout-dot" id="awayTimeout3"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Row: possession, down & distance, ball on -->
+    <div id="bottom-row">
+      <div id="possession">
+        <!-- Arrow inserted dynamically -->
+      </div>
+      <div id="downDistance">1st & 10</div>
+      <div id="ballOn">Ball on 50</div>
     </div>
   </div>
 
   <script>
-    // Get URL query parameters
+    // Parse query parameters from URL
     function getQueryParams() {
       const params = {};
       location.search.substring(1).split("&").forEach(pair => {
@@ -62,18 +192,66 @@
       return params;
     }
 
-    // Update scoreboard from query params
-    function updateScoreboard() {
-      const params = getQueryParams();
+    // Update timeout dots opacity (used = gray)
+    function setTimeouts(prefix, usedCount) {
+      for (let i = 1; i <= 3; i++) {
+        const dot = document.getElementById(prefix + "Timeout" + i);
+        if (dot) {
+          dot.classList.toggle("used", i <= usedCount);
+        }
+      }
+    }
 
-      document.getElementById('homeName').textContent = params.homeName || 'HOME';
-      document.getElementById('awayName').textContent = params.awayName || 'AWAY';
-      document.getElementById('homeScore').textContent = params.homeScore || '0';
-      document.getElementById('awayScore').textContent = params.awayScore || '0';
+    // Update the possession arrow
+    function updatePossession(possessionTeam) {
+      const possessionDiv = document.getElementById("possession");
+      possessionDiv.innerHTML = ""; // Clear previous arrows
+
+      if (possessionTeam === "home") {
+        const arrow = document.createElement("div");
+        arrow.classList.add("arrow", "possession-home");
+        possessionDiv.appendChild(arrow);
+      } else if (possessionTeam === "away") {
+        const arrow = document.createElement("div");
+        arrow.classList.add("arrow", "possession-away");
+        possessionDiv.appendChild(arrow);
+      }
+    }
+
+    function updateScoreboard() {
+      const p = getQueryParams();
+
+      // Teams & scores
+      document.getElementById('homeName').textContent = p.homeName || "HOME";
+      document.getElementById('awayName').textContent = p.awayName || "AWAY";
+      document.getElementById('homeScore').textContent = p.homeScore || "0";
+      document.getElementById('awayScore').textContent = p.awayScore || "0";
+
+      // Quarter display
+      let q = p.quarter || "1";
+      if (!["1","2","3","4","OT"].includes(q.toUpperCase())) q = "1";
+      document.getElementById("quarter").textContent = q.toUpperCase() === "OT" ? "OT" : "Q" + q;
+
+      // Timeouts used (0-3)
+      setTimeouts("home", parseInt(p.homeTimeoutsUsed) || 0);
+      setTimeouts("away", parseInt(p.awayTimeoutsUsed) || 0);
+
+      // Possession
+      updatePossession(p.possession || "");
+
+      // Down & Distance (format: down=1 distance=10)
+      const down = p.down || "1";
+      const distance = p.distance || "10";
+      const downStr = down === "1" ? "1st" : down === "2" ? "2nd" : down === "3" ? "3rd" : down === "4" ? "4th" : down + "th";
+      document.getElementById("downDistance").textContent = `${downStr} & ${distance}`;
+
+      // Ball on yard line (1-50)
+      let ballOn = p.ballOn || "50";
+      ballOn = Math.min(Math.max(parseInt(ballOn), 1), 50);
+      document.getElementById("ballOn").textContent = `Ball on ${ballOn}`;
     }
 
     updateScoreboard();
   </script>
-
 </body>
 </html>
